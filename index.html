@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <!--
+        Cette ligne indique au navigateur
+        que notre page utilise UTF-8.
+
+        Cela permet notamment d'afficher correctement :
+        é, è, à, ç, 📷, 🟢, etc.
+    -->
+    <meta charset="UTF-8">
+
+
+    <!--
+        Cette ligne rend notre page
+        adaptée aux téléphones.
+    -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+
+    <!--
+        Titre affiché dans l'onglet du navigateur.
+    -->
+    <title>Contrôle de présence</title>
+
+
+    <style>
+
+        /*
+            STYLE GÉNÉRAL
+        */
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f6f8;
+
+            margin: 0;
+
+            padding: 20px;
+
+            text-align: center;
+        }
+
+
+        /*
+            CONTENEUR PRINCIPAL
+        */
+
+        .container {
+
+            max-width: 500px;
+
+            margin: auto;
+
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+
+        /*
+            TITRE
+        */
+
+        h1 {
+
+            margin-bottom: 10px;
+        }
+
+
+        /*
+            MESSAGE
+        */
+
+        #message {
+
+            margin-top: 25px;
+
+            font-size: 18px;
+
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="container">
+
+
+        <!-- Titre de notre application -->
+
+        <h1>
+            📷 Contrôle de présence
+        </h1>
+
+
+        <!-- Description -->
+
+        <p>
+            Scanner les QR Codes des participants
+        </p>
+
+
+        <!--
+            Cette zone recevra plus tard
+            notre scanner QR.
+        -->
+
+        <div id="message">
+
+            Application en préparation...
+
+        </div>
+
+
+    </div>
+
+
+</body>
+
+</html>
