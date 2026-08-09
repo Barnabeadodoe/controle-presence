@@ -2,23 +2,102 @@
 <html lang="fr">
 
 <head>
+
+    <!-- =====================================================
+         CONFIGURATION DE BASE DE LA PAGE
+         ===================================================== -->
+
+    <!-- Permet d'afficher correctement les accents et emojis -->
     <meta charset="UTF-8">
 
+    <!-- Rend l'application adaptée aux téléphones -->
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <!-- Titre de la page -->
     <title>Contrôle de présence</title>
 
 
-    <!--
-        Chargement de la bibliothèque QR.
+    <!-- =====================================================
+         BIBLIOTHÈQUE QR CODE
+         =====================================================
+
+         Cette bibliothèque permet d'utiliser la caméra
+         du téléphone et de détecter les QR Codes.
     -->
+
     <script src="https://unpkg.com/html5-qrcode"></script>
 
 
+    <!-- =====================================================
+         STYLE DE L'APPLICATION
+         ===================================================== -->
+
     <style>
 
-        /* Ton CSS reste ici */
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f6f8;
+
+            margin: 0;
+
+            padding: 20px;
+
+            text-align: center;
+        }
+
+
+        .container {
+
+            max-width: 500px;
+
+            margin: auto;
+
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+
+        h1 {
+
+            margin-bottom: 10px;
+        }
+
+
+        /*
+            Zone dans laquelle la bibliothèque
+            html5-qrcode va afficher la caméra.
+        */
+
+        #reader {
+
+            width: 100%;
+
+            margin-top: 20px;
+        }
+
+
+        /*
+            Zone dans laquelle nous afficherons
+            les résultats du scan.
+        */
+
+        #message {
+
+            margin-top: 25px;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+        }
 
     </style>
 
@@ -28,450 +107,354 @@
 <body>
 
 
+    <!-- =====================================================
+         INTERFACE PRINCIPALE
+         ===================================================== -->
+
     <div class="container">
 
-
-        <!-- Titre de notre application -->
 
         <h1>
             📷 Contrôle de présence
         </h1>
 
 
-        <!-- Description -->
-
         <p>
             Scanner les QR Codes des participants
         </p>
 
 
-        <!--
-            Cette zone recevra plus tard
-            notre scanner QR.
-        -->
+        <!-- =================================================
+             ZONE DU SCANNER
 
-       <!--
-    =====================================================
-    ZONE DU SCANNER
-    =====================================================
-
-    La bibliothèque html5-qrcode va construire
-    automatiquement l'interface du scanner
-    à l'intérieur de cette div.
-
-    IMPORTANT :
-    "reader" est simplement l'identifiant
-    que nous avons choisi pour cette zone.
--->
-
-<div id="reader"></div>
-
-
-<!--
-    =====================================================
-    ZONE DU RÉSULTAT
-    =====================================================
-
-    C'est ici que nous afficherons
-    le contenu du QR Code détecté.
--->
-
-<div id="message">
-
-    🔎 En attente d'un QR Code...
-
-</div>
-
-    </div>
-
-<script>
-
-    /*
-        =====================================================
-        FONCTION : qrCodeDetecte()
-        =====================================================
-
-        Cette fonction sera automatiquement appelée
-        par la bibliothèque lorsqu'un QR Code est trouvé.
-
-        "qrCodeMessage" contient le texte du QR Code.
-
-        Exemple :
-
-        QR Code
-            ↓
-        EVT001-P0001
-
-        donc :
-
-        qrCodeMessage = "EVT001-P0001"
-    
-
-    function qrCodeDetecte(qrCodeMessage) {
-
-        console.log("QR Code détecté :", qrCodeMessage);
-
-
-        /*
-            Nous récupérons la zone "message"
-            créée précédemment.
-        
-
-        const message =
-            document.getElementById("message");
-
-
-        /*
-            Nous affichons le résultat.
-        
-
-        message.innerHTML =
-            "🟢 QR CODE DÉTECTÉ<br><br>" +
-            "<strong>" +
-            qrCodeMessage +
-            "</strong>";
-
-    }
-
-
-
-    /*
-        =====================================================
-        FONCTION : erreurScan()
-        =====================================================
-
-        Cette fonction est appelée lorsque la caméra
-        fonctionne mais qu'aucun QR Code n'est encore
-        détecté.
-
-        IMPORTANT :
-
-        Ce n'est PAS une vraie erreur.
-
-        Pendant que la caméra cherche un QR Code,
-        cette fonction peut être appelée plusieurs fois.
-    
-
-    function erreurScan(errorMessage) {
-
-        console.log(
-            "Recherche d'un QR Code..."
-        );
-
-    }
-
-
-
-    /*
-        =====================================================
-        CRÉATION DU SCANNER
-        =====================================================
-
-        "reader" correspond à :
+             html5-qrcode va créer la caméra ici.
+             ================================================= -->
 
         <div id="reader"></div>
 
-        La bibliothèque va créer le scanner
-        à l'intérieur de cette zone.
-    
 
-    const scanner = new Html5QrcodeScanner(
+        <!-- =================================================
+             ZONE DU MESSAGE
 
-        "reader",
+             Nous afficherons ici :
 
-        {
+             - QR détecté
+             - Participant trouvé
+             - Participant inconnu
+             - Erreur
+             ================================================= -->
 
-        
-                Nombre d'images analysées par seconde.
+        <div id="message">
 
-                10 est largement suffisant
-                pour notre système.
-            
-            fps: 10,
+            🔎 En attente d'un QR Code...
 
+        </div>
 
-          
-                Taille de la zone de détection.
 
-                Ici : environ 250 × 250 pixels.
-          
+    </div>
 
-            qrbox: 250
 
-        }
 
-    );
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
 
-
-
-    /*
-        =====================================================
-        DÉMARRAGE DU SCANNER
-        =====================================================
-
-        On donne deux fonctions à la bibliothèque :
-
-        1. qrCodeDetecte
-           → appelée lorsqu'un QR est trouvé.
-
-        2. erreurScan
-           → appelée pendant la recherche.
-   
-
-    scanner.render(
-
-        qrCodeDetecte,
-
-        erreurScan
-
-    ); 
-
-    // Création du lien backend dans une constante pour ne pas répéter le long lien partout 
-    
-    const URL_BACKEND = "https://script.google.com/macros/s/AKfycbynCIYWydDFECiT5DbaFgL1pwajVg3pHbco0Dn3Nw9JmknfPpXEJjO3AKQxF6JJTDl72Q/exec";
-    */ 
-
-    /*
-    =========================================================
-    URL DE NOTRE BACKEND GOOGLE APPS SCRIPT
-    =========================================================
-
-    Cette URL est le point de communication entre :
-
-        GitHub Pages
-              ↓
-        Google Apps Script
-              ↓
-        Google Sheets
-
-    IMPORTANT :
-    Ne mets PAS "?id=..." ici.
-
-    Nous ajouterons l'ID du participant
-    automatiquement dans le code plus bas.
-*/
-
-const URL_BACKEND =
-    "https://script.google.com/macros/s/AKfycbynCIYWydDFECiT5DbaFgL1pwajVg3pHbco0Dn3Nw9JmknfPpXEJjO3AKQxF6JJTDl72Q/exec";
-
-
-
-/*
-    =========================================================
-    FONCTION : qrCodeDetecte()
-    =========================================================
-
-    Cette fonction est automatiquement appelée
-    lorsqu'un QR Code est détecté.
-
-    Exemple :
-
-        QR Code
-           ↓
-        EVT001-P0001
-
-    qrCodeMessage contient donc :
-
-        "EVT001-P0001"
-*/
-
-async function qrCodeDetecte(qrCodeMessage) {
-
-
-    /*
-        -----------------------------------------------------
-        1. AFFICHER DANS LA CONSOLE
-        -----------------------------------------------------
-
-        Cela nous permet de vérifier que
-        le QR a bien été lu.
-    */
-
-    console.log(
-        "QR Code détecté :",
-        qrCodeMessage
-    );
-
-
-    /*
-        -----------------------------------------------------
-        2. RÉCUPÉRER LA ZONE D'AFFICHAGE
-        -----------------------------------------------------
-    */
-
-    const message =
-        document.getElementById("message");
-
-
-    /*
-        -----------------------------------------------------
-        3. INFORMER L'UTILISATEUR
-        -----------------------------------------------------
-
-        Pendant que nous contactons Apps Script,
-        nous affichons un message.
-    */
-
-    message.innerHTML =
-        "⏳ Vérification du participant...";
-
-
-    /*
-        -----------------------------------------------------
-        4. CONSTRUIRE L'URL DU BACKEND
-        -----------------------------------------------------
-
-        Notre URL de départ :
-
-        https://.../exec
-
-        devient :
-
-        https://.../exec?id=EVT001-P0001
-    */
-
-
-    const url =
-        URL_BACKEND +
-        "?id=" +
-        encodeURIComponent(qrCodeMessage);
-
-
-    /*
-        -----------------------------------------------------
-        5. ENVOYER LA REQUÊTE À GOOGLE APPS SCRIPT
-        -----------------------------------------------------
-
-        fetch() permet à JavaScript de contacter
-        une autre adresse Internet.
-
-        Ici :
-
-        GitHub Pages
-              ↓
-            fetch()
-              ↓
-        Apps Script
-    */
-
-    try {
-
-
-        const reponse =
-            await fetch(url);
+    <script>
 
 
         /*
-            -------------------------------------------------
-            6. RÉCUPÉRER LA RÉPONSE
+            =================================================
+            1. ADRESSE DE NOTRE BACKEND APPS SCRIPT
+            =================================================
 
-            Apps Script nous renvoie du JSON.
+            C'est l'adresse qui permet à notre application
+            GitHub de communiquer avec Google Apps Script.
+
+            IMPORTANT :
+            On ne met PAS "?id=..." ici.
+
+            L'ID sera ajouté automatiquement plus bas.
+        */
+
+        const URL_BACKEND =
+            "https://script.google.com/macros/s/AKfycbynCIYWydDFECiT5DbaFgL1pwajVg3pHbco0Dn3Nw9JmknfPpXEJjO3AKQxF6JJTDl72Q/exec";
+
+
+
+        /*
+            =================================================
+            2. FONCTION APPELÉE LORSQU'UN QR EST DÉTECTÉ
+            =================================================
 
             Exemple :
 
-            {
-                "trouve": true,
-                "nom": "KOFFI",
-                "prenom": "Jean",
-                "id": "EVT001-P0001"
-            }
+            QR Code
+                ↓
+            EVT001-P0001
 
-            response.json() transforme cette réponse
-            en objet JavaScript que nous pouvons utiliser.
+            qrCodeMessage contient :
+
+            "EVT001-P0001"
         */
 
-        const participant =
-            await reponse.json();
-
-
-        /*
-            -------------------------------------------------
-            7. VÉRIFIER SI LE PARTICIPANT EXISTE
-            -------------------------------------------------
-        */
-
-        if (participant.trouve === true) {
+        async function qrCodeDetecte(qrCodeMessage) {
 
 
             /*
-                Participant trouvé !
-            */
-
-            message.innerHTML =
-
-                "🟢 PARTICIPANT TROUVÉ<br><br>" +
-
-                "<strong>" +
-                participant.prenom +
-                " " +
-                participant.nom +
-                "</strong><br><br>" +
-
-                "ID : " +
-                participant.id;
-
-
-            /*
-                Affichage également dans la console.
+                Affichage dans la console du navigateur.
             */
 
             console.log(
-                "Participant trouvé :",
-                participant
+                "QR Code détecté :",
+                qrCodeMessage
             );
 
 
-        } else {
+            /*
+                Récupération de la zone de message.
+            */
+
+            const message =
+                document.getElementById("message");
 
 
             /*
-                Le QR a été lu mais
-                l'ID n'existe pas dans notre base.
+                On informe l'utilisateur que nous sommes
+                en train de contacter notre serveur.
             */
 
             message.innerHTML =
+                "⏳ Vérification du participant...";
 
-                "🔴 PARTICIPANT INCONNU<br><br>" +
 
-                "ID : " +
-                qrCodeMessage;
+            /*
+                =================================================
+                3. CONSTRUCTION DE L'URL
+
+                Notre URL :
+
+                https://.../exec
+
+                devient :
+
+                https://.../exec?id=EVT001-P0001
+                =================================================
+            */
+
+            const url =
+                URL_BACKEND +
+                "?id=" +
+                encodeURIComponent(qrCodeMessage);
 
 
             console.log(
-                "Participant inconnu :",
-                qrCodeMessage
+                "URL envoyée au backend :",
+                url
+            );
+
+
+            /*
+                =================================================
+                4. COMMUNICATION AVEC APPS SCRIPT
+                =================================================
+
+                fetch() permet à notre page GitHub
+                de contacter notre backend Apps Script.
+            */
+
+            try {
+
+
+                const reponse =
+                    await fetch(url);
+
+
+                /*
+                    On transforme la réponse du serveur
+                    en objet JSON.
+                */
+
+                const participant =
+                    await reponse.json();
+
+
+                console.log(
+                    "Réponse du backend :",
+                    participant
+                );
+
+
+                /*
+                    =================================================
+                    5. PARTICIPANT TROUVÉ
+                    =================================================
+                */
+
+                if (participant.trouve === true) {
+
+
+                    message.innerHTML =
+
+                        "🟢 PARTICIPANT TROUVÉ<br><br>" +
+
+                        "<strong>" +
+
+                        participant.prenom +
+
+                        " " +
+
+                        participant.nom +
+
+                        "</strong><br><br>" +
+
+                        "ID : " +
+
+                        participant.id;
+
+
+                }
+
+
+                /*
+                    =================================================
+                    6. PARTICIPANT NON TROUVÉ
+                    =================================================
+                */
+
+                else {
+
+
+                    message.innerHTML =
+
+                        "🔴 PARTICIPANT INCONNU<br><br>" +
+
+                        "ID : " +
+
+                        qrCodeMessage;
+
+                }
+
+
+            }
+
+
+            /*
+                =================================================
+                7. GESTION DES ERREURS
+                =================================================
+            */
+
+            catch (erreur) {
+
+
+                console.error(
+                    "Erreur de communication :",
+                    erreur
+                );
+
+
+                message.innerHTML =
+
+                    "⚠️ Impossible de communiquer avec le serveur";
+
+
+            }
+
+        }
+
+
+
+        /*
+            =====================================================
+            8. FONCTION DE RECHERCHE DU QR
+            =====================================================
+
+            Cette fonction est appelée pendant que la caméra
+            cherche un QR Code.
+
+            Ce n'est PAS une erreur.
+
+            C'est simplement le scanner qui continue
+            de chercher.
+        */
+
+        function erreurScan(errorMessage) {
+
+            console.log(
+                "Recherche d'un QR Code..."
             );
 
         }
 
 
-    } catch (erreur) {
+
+        /*
+            =====================================================
+            9. CRÉATION DU SCANNER
+            =====================================================
+
+            "reader" correspond à :
+
+            <div id="reader"></div>
+
+            La bibliothèque va afficher la caméra
+            dans cette zone.
+        */
+
+        const scanner =
+
+            new Html5QrcodeScanner(
+
+                "reader",
+
+                {
+
+                    /*
+                        Nombre d'images analysées
+                        chaque seconde.
+                    */
+
+                    fps: 10,
+
+
+                    /*
+                        Taille de la zone de détection
+                        du QR Code.
+                    */
+
+                    qrbox: 250
+
+                }
+
+            );
+
 
 
         /*
-            -------------------------------------------------
-            8. GESTION DES ERREURS
-            -------------------------------------------------
+            =====================================================
+            10. DÉMARRAGE DU SCANNER
+            =====================================================
 
-            Si la connexion avec Apps Script échoue,
-            nous arrivons ici.
+            Cette ligne est TRÈS IMPORTANTE.
+
+            Elle demande à la bibliothèque :
+
+            "Démarre la caméra et appelle
+             qrCodeDetecte() lorsqu'un QR est trouvé."
         */
 
-        console.error(
-            "Erreur de communication avec le backend :",
-            erreur
+        scanner.render(
+
+            qrCodeDetecte,
+
+            erreurScan
+
         );
 
 
-        message.innerHTML =
+    </script>
 
-            "⚠️ Erreur de communication avec le serveur";
 
-    }
-
-}
-
-</script>
 </body>
 
 </html>
