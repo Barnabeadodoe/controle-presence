@@ -105,7 +105,7 @@
         donc :
 
         qrCodeMessage = "EVT001-P0001"
-    */
+    
 
     function qrCodeDetecte(qrCodeMessage) {
 
@@ -115,7 +115,7 @@
         /*
             Nous récupérons la zone "message"
             créée précédemment.
-        */
+        
 
         const message =
             document.getElementById("message");
@@ -123,7 +123,7 @@
 
         /*
             Nous affichons le résultat.
-        */
+        
 
         message.innerHTML =
             "🟢 QR CODE DÉTECTÉ<br><br>" +
@@ -150,7 +150,7 @@
 
         Pendant que la caméra cherche un QR Code,
         cette fonction peut être appelée plusieurs fois.
-    */
+    
 
     function erreurScan(errorMessage) {
 
@@ -173,7 +173,7 @@
 
         La bibliothèque va créer le scanner
         à l'intérieur de cette zone.
-    */
+    
 
     const scanner = new Html5QrcodeScanner(
 
@@ -181,21 +181,20 @@
 
         {
 
-            /*
+        
                 Nombre d'images analysées par seconde.
 
                 10 est largement suffisant
                 pour notre système.
-            */
-
+            
             fps: 10,
 
 
-            /*
+          
                 Taille de la zone de détection.
 
                 Ici : environ 250 × 250 pixels.
-            */
+          
 
             qrbox: 250
 
@@ -217,7 +216,7 @@
 
         2. erreurScan
            → appelée pendant la recherche.
-    */
+   
 
     scanner.render(
 
@@ -225,7 +224,252 @@
 
         erreurScan
 
+    ); 
+
+    // Création du lien backend dans une constante pour ne pas répéter le long lien partout 
+    
+    const URL_BACKEND = "https://script.google.com/macros/s/AKfycbynCIYWydDFECiT5DbaFgL1pwajVg3pHbco0Dn3Nw9JmknfPpXEJjO3AKQxF6JJTDl72Q/exec";
+    */ 
+
+    /*
+    =========================================================
+    URL DE NOTRE BACKEND GOOGLE APPS SCRIPT
+    =========================================================
+
+    Cette URL est le point de communication entre :
+
+        GitHub Pages
+              ↓
+        Google Apps Script
+              ↓
+        Google Sheets
+
+    IMPORTANT :
+    Ne mets PAS "?id=..." ici.
+
+    Nous ajouterons l'ID du participant
+    automatiquement dans le code plus bas.
+*/
+
+const URL_BACKEND =
+    "https://script.google.com/macros/s/AKfycbynCIYWydDFECiT5DbaFgL1pwajVg3pHbco0Dn3Nw9JmknfPpXEJjO3AKQxF6JJTDl72Q/exec";
+
+
+
+/*
+    =========================================================
+    FONCTION : qrCodeDetecte()
+    =========================================================
+
+    Cette fonction est automatiquement appelée
+    lorsqu'un QR Code est détecté.
+
+    Exemple :
+
+        QR Code
+           ↓
+        EVT001-P0001
+
+    qrCodeMessage contient donc :
+
+        "EVT001-P0001"
+*/
+
+async function qrCodeDetecte(qrCodeMessage) {
+
+
+    /*
+        -----------------------------------------------------
+        1. AFFICHER DANS LA CONSOLE
+        -----------------------------------------------------
+
+        Cela nous permet de vérifier que
+        le QR a bien été lu.
+    */
+
+    console.log(
+        "QR Code détecté :",
+        qrCodeMessage
     );
+
+
+    /*
+        -----------------------------------------------------
+        2. RÉCUPÉRER LA ZONE D'AFFICHAGE
+        -----------------------------------------------------
+    */
+
+    const message =
+        document.getElementById("message");
+
+
+    /*
+        -----------------------------------------------------
+        3. INFORMER L'UTILISATEUR
+        -----------------------------------------------------
+
+        Pendant que nous contactons Apps Script,
+        nous affichons un message.
+    */
+
+    message.innerHTML =
+        "⏳ Vérification du participant...";
+
+
+    /*
+        -----------------------------------------------------
+        4. CONSTRUIRE L'URL DU BACKEND
+        -----------------------------------------------------
+
+        Notre URL de départ :
+
+        https://.../exec
+
+        devient :
+
+        https://.../exec?id=EVT001-P0001
+    */
+
+
+    const url =
+        URL_BACKEND +
+        "?id=" +
+        encodeURIComponent(qrCodeMessage);
+
+
+    /*
+        -----------------------------------------------------
+        5. ENVOYER LA REQUÊTE À GOOGLE APPS SCRIPT
+        -----------------------------------------------------
+
+        fetch() permet à JavaScript de contacter
+        une autre adresse Internet.
+
+        Ici :
+
+        GitHub Pages
+              ↓
+            fetch()
+              ↓
+        Apps Script
+    */
+
+    try {
+
+
+        const reponse =
+            await fetch(url);
+
+
+        /*
+            -------------------------------------------------
+            6. RÉCUPÉRER LA RÉPONSE
+
+            Apps Script nous renvoie du JSON.
+
+            Exemple :
+
+            {
+                "trouve": true,
+                "nom": "KOFFI",
+                "prenom": "Jean",
+                "id": "EVT001-P0001"
+            }
+
+            response.json() transforme cette réponse
+            en objet JavaScript que nous pouvons utiliser.
+        */
+
+        const participant =
+            await reponse.json();
+
+
+        /*
+            -------------------------------------------------
+            7. VÉRIFIER SI LE PARTICIPANT EXISTE
+            -------------------------------------------------
+        */
+
+        if (participant.trouve === true) {
+
+
+            /*
+                Participant trouvé !
+            */
+
+            message.innerHTML =
+
+                "🟢 PARTICIPANT TROUVÉ<br><br>" +
+
+                "<strong>" +
+                participant.prenom +
+                " " +
+                participant.nom +
+                "</strong><br><br>" +
+
+                "ID : " +
+                participant.id;
+
+
+            /*
+                Affichage également dans la console.
+            */
+
+            console.log(
+                "Participant trouvé :",
+                participant
+            );
+
+
+        } else {
+
+
+            /*
+                Le QR a été lu mais
+                l'ID n'existe pas dans notre base.
+            */
+
+            message.innerHTML =
+
+                "🔴 PARTICIPANT INCONNU<br><br>" +
+
+                "ID : " +
+                qrCodeMessage;
+
+
+            console.log(
+                "Participant inconnu :",
+                qrCodeMessage
+            );
+
+        }
+
+
+    } catch (erreur) {
+
+
+        /*
+            -------------------------------------------------
+            8. GESTION DES ERREURS
+            -------------------------------------------------
+
+            Si la connexion avec Apps Script échoue,
+            nous arrivons ici.
+        */
+
+        console.error(
+            "Erreur de communication avec le backend :",
+            erreur
+        );
+
+
+        message.innerHTML =
+
+            "⚠️ Erreur de communication avec le serveur";
+
+    }
+
+}
 
 </script>
 </body>
