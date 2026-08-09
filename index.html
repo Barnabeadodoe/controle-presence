@@ -2,93 +2,23 @@
 <html lang="fr">
 
 <head>
-
-    <!--
-        Cette ligne indique au navigateur
-        que notre page utilise UTF-8.
-
-        Cela permet notamment d'afficher correctement :
-        é, è, à, ç, 📷, 🟢, etc.
-    -->
     <meta charset="UTF-8">
 
-
-    <!--
-        Cette ligne rend notre page
-        adaptée aux téléphones.
-    -->
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <title>Contrôle de présence</title>
+
 
     <!--
-        Titre affiché dans l'onglet du navigateur.
+        Chargement de la bibliothèque QR.
     -->
-    <title>Contrôle de présence</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
 
     <style>
 
-        /*
-            STYLE GÉNÉRAL
-        */
-
-        body {
-
-            font-family: Arial, sans-serif;
-
-            background: #f4f6f8;
-
-            margin: 0;
-
-            padding: 20px;
-
-            text-align: center;
-        }
-
-
-        /*
-            CONTENEUR PRINCIPAL
-        */
-
-        .container {
-
-            max-width: 500px;
-
-            margin: auto;
-
-            background: white;
-
-            padding: 25px;
-
-            border-radius: 15px;
-
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-
-        /*
-            TITRE
-        */
-
-        h1 {
-
-            margin-bottom: 10px;
-        }
-
-
-        /*
-            MESSAGE
-        */
-
-        #message {
-
-            margin-top: 25px;
-
-            font-size: 18px;
-
-            font-weight: bold;
-        }
+        /* Ton CSS reste ici */
 
     </style>
 
@@ -120,16 +50,184 @@
             notre scanner QR.
         -->
 
-        <div id="message">
+       <!--
+    =====================================================
+    ZONE DU SCANNER
+    =====================================================
 
-            Application en préparation...
+    La bibliothèque html5-qrcode va construire
+    automatiquement l'interface du scanner
+    à l'intérieur de cette div.
 
-        </div>
+    IMPORTANT :
+    "reader" est simplement l'identifiant
+    que nous avons choisi pour cette zone.
+-->
 
+<div id="reader"></div>
+
+
+<!--
+    =====================================================
+    ZONE DU RÉSULTAT
+    =====================================================
+
+    C'est ici que nous afficherons
+    le contenu du QR Code détecté.
+-->
+
+<div id="message">
+
+    🔎 En attente d'un QR Code...
+
+</div>
 
     </div>
 
+<script>
 
+    /*
+        =====================================================
+        FONCTION : qrCodeDetecte()
+        =====================================================
+
+        Cette fonction sera automatiquement appelée
+        par la bibliothèque lorsqu'un QR Code est trouvé.
+
+        "qrCodeMessage" contient le texte du QR Code.
+
+        Exemple :
+
+        QR Code
+            ↓
+        EVT001-P0001
+
+        donc :
+
+        qrCodeMessage = "EVT001-P0001"
+    */
+
+    function qrCodeDetecte(qrCodeMessage) {
+
+        console.log("QR Code détecté :", qrCodeMessage);
+
+
+        /*
+            Nous récupérons la zone "message"
+            créée précédemment.
+        */
+
+        const message =
+            document.getElementById("message");
+
+
+        /*
+            Nous affichons le résultat.
+        */
+
+        message.innerHTML =
+            "🟢 QR CODE DÉTECTÉ<br><br>" +
+            "<strong>" +
+            qrCodeMessage +
+            "</strong>";
+
+    }
+
+
+
+    /*
+        =====================================================
+        FONCTION : erreurScan()
+        =====================================================
+
+        Cette fonction est appelée lorsque la caméra
+        fonctionne mais qu'aucun QR Code n'est encore
+        détecté.
+
+        IMPORTANT :
+
+        Ce n'est PAS une vraie erreur.
+
+        Pendant que la caméra cherche un QR Code,
+        cette fonction peut être appelée plusieurs fois.
+    */
+
+    function erreurScan(errorMessage) {
+
+        console.log(
+            "Recherche d'un QR Code..."
+        );
+
+    }
+
+
+
+    /*
+        =====================================================
+        CRÉATION DU SCANNER
+        =====================================================
+
+        "reader" correspond à :
+
+        <div id="reader"></div>
+
+        La bibliothèque va créer le scanner
+        à l'intérieur de cette zone.
+    */
+
+    const scanner = new Html5QrcodeScanner(
+
+        "reader",
+
+        {
+
+            /*
+                Nombre d'images analysées par seconde.
+
+                10 est largement suffisant
+                pour notre système.
+            */
+
+            fps: 10,
+
+
+            /*
+                Taille de la zone de détection.
+
+                Ici : environ 250 × 250 pixels.
+            */
+
+            qrbox: 250
+
+        }
+
+    );
+
+
+
+    /*
+        =====================================================
+        DÉMARRAGE DU SCANNER
+        =====================================================
+
+        On donne deux fonctions à la bibliothèque :
+
+        1. qrCodeDetecte
+           → appelée lorsqu'un QR est trouvé.
+
+        2. erreurScan
+           → appelée pendant la recherche.
+    */
+
+    scanner.render(
+
+        qrCodeDetecte,
+
+        erreurScan
+
+    );
+
+</script>
 </body>
 
 </html>
