@@ -197,7 +197,260 @@
             "EVT001-P0001"
         */
 
+        async function qrCodeDetecte(qrCodeMessage) {
+
+
+            /*
+                Affichage dans la console du navigateur.
+            */
+
+            console.log(
+                "QR Code détecté :",
+                qrCodeMessage
+            );
+
+
+            /*
+                Récupération de la zone de message.
+            */
+
+            const message =
+                document.getElementById("message");
+
+
+            /*
+                On informe l'utilisateur que nous sommes
+                en train de contacter notre serveur.
+            */
+
+            message.innerHTML =
+                "⏳ Vérification du participant...";
+
+
+            /*
+                =================================================
+                3. CONSTRUCTION DE L'URL
+
+                Notre URL :
+
+                https://.../exec
+
+                devient :
+
+                https://.../exec?id=EVT001-P0001
+                =================================================
+            */
+
+            const url =
+                URL_BACKEND +
+                "?id=" +
+                encodeURIComponent(qrCodeMessage);
+
+
+            console.log(
+                "URL envoyée au backend :",
+                url
+            );
+
+
+            /*
+                =================================================
+                4. COMMUNICATION AVEC APPS SCRIPT
+                =================================================
+
+                fetch() permet à notre page GitHub
+                de contacter notre backend Apps Script.
+            */
+
+            try {
+
+
+                const reponse =
+                    await fetch(url);
+
+
+                /*
+                    On transforme la réponse du serveur
+                    en objet JSON.
+                */
+
+                const participant =
+                    await reponse.json();
+
+
+                console.log(
+                    "Réponse du backend :",
+                    participant
+                );
+
+
+                /*
+                    =================================================
+                    5. PARTICIPANT TROUVÉ
+                    =================================================
+                */
+
+                if (participant.trouve === true) {
+
+
+                    message.innerHTML =
+
+                        "🟢 PARTICIPANT TROUVÉ<br><br>" +
+
+                        "<strong>" +
+
+                        participant.prenom +
+
+                        " " +
+
+                        participant.nom +
+
+                        "</strong><br><br>" +
+
+                        "ID : " +
+
+                        participant.id;
+
+
+                }
+
+
+                /*
+                    =================================================
+                    6. PARTICIPANT NON TROUVÉ
+                    =================================================
+                */
+
+                else {
+
+
+                    message.innerHTML =
+
+                        "🔴 PARTICIPANT INCONNU<br><br>" +
+
+                        "ID : " +
+
+                        qrCodeMessage;
+
+                }
+
+
+            }
+
+
+            /*
+                =================================================
+                7. GESTION DES ERREURS
+                =================================================
+            */
+
+            catch (erreur) {
+
+
+                console.error(
+                    "Erreur de communication :",
+                    erreur
+                );
+
+
+                message.innerHTML =
+
+                    "⚠️ Impossible de communiquer avec le serveur";
+
+
+            }
+
+        }
+
+
+
         /*
+            =====================================================
+            8. FONCTION DE RECHERCHE DU QR
+            =====================================================
+
+            Cette fonction est appelée pendant que la caméra
+            cherche un QR Code.
+
+            Ce n'est PAS une erreur.
+
+            C'est simplement le scanner qui continue
+            de chercher.
+        */
+
+        function erreurScan(errorMessage) {
+
+            console.log(
+                "Recherche d'un QR Code..."
+            );
+
+        }
+
+
+
+        /*
+            =====================================================
+            9. CRÉATION DU SCANNER
+            =====================================================
+
+            "reader" correspond à :
+
+            <div id="reader"></div>
+
+            La bibliothèque va afficher la caméra
+            dans cette zone.
+        */
+
+        const scanner =
+
+            new Html5QrcodeScanner(
+
+                "reader",
+
+                {
+
+                    /*
+                        Nombre d'images analysées
+                        chaque seconde.
+                    */
+
+                    fps: 10,
+
+
+                    /*
+                        Taille de la zone de détection
+                        du QR Code.
+                    */
+
+                    qrbox: 250
+
+                }
+
+            );
+
+
+
+        /*
+            =====================================================
+            10. DÉMARRAGE DU SCANNER
+            =====================================================
+
+            Cette ligne est TRÈS IMPORTANTE.
+
+            Elle demande à la bibliothèque :
+
+            "Démarre la caméra et appelle
+             qrCodeDetecte() lorsqu'un QR est trouvé."
+        */
+
+        scanner.render(
+
+            qrCodeDetecte,
+
+            erreurScan
+
+        );
+/*
  * ============================================================
  * FONCTION : qrCodeDetecte()
  * ============================================================
